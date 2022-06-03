@@ -1,19 +1,23 @@
 package edu.ecu.cs.pirateplaces
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 
 
+private const val TAG = "PirateListFragment"
 class PiratePlacesListFragment: Fragment() {
     private lateinit var piratePlacesRecyclerView: RecyclerView
-    private var adapter: PlaceAdapter? = null
+    private var adapter: PlaceAdapter? = PlaceAdapter(emptyList())
+        // private var adapter: PlaceAdapter? = null
 
     private val piratePlacesListViewModel : PiratePlacesListViewModel by lazy {
         ViewModelProviders.of(this).get(PiratePlacesListViewModel::class.java)
@@ -28,14 +32,28 @@ class PiratePlacesListFragment: Fragment() {
 
         piratePlacesRecyclerView = view.findViewById(R.id.pirate_places_recycler_view) as RecyclerView
         piratePlacesRecyclerView.layoutManager = LinearLayoutManager(context)
+        piratePlacesRecyclerView.adapter = adapter
 
-        updateUI()
+        //updateUI()
 
         return view
     }
 
-    private fun updateUI() {
-        val places = piratePlacesListViewModel.piratePlaceList
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        piratePlacesListViewModel.pirateListLiveData.observe(
+            viewLifecycleOwner,
+            Observer { places ->
+                places?.let {
+                    Log.i(TAG, "Got crimes ${places.size}")
+                    updateUI(places)
+                }
+            })
+    }
+
+   // private fun updateUI() {
+    private fun updateUI(places: List<PiratePlace>){
+       // val places = piratePlacesListViewModel.piratePlaceList
         adapter = PlaceAdapter(places)
         piratePlacesRecyclerView.adapter = adapter
     }

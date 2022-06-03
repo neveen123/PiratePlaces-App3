@@ -1,9 +1,12 @@
 package edu.ecu.cs.pirateplaces
 
+import androidx.room.Entity
+import androidx.room.PrimaryKey
 import java.io.Serializable
 import java.util.*
 
-data class PiratePlace(
+@Entity
+data class PiratePlace(@PrimaryKey
     val id: UUID = UUID.randomUUID(),
     var name: String = "",
     var visitedWith: String = "",

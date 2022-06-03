@@ -30,7 +30,7 @@ class PiratePlacesDetailFragment: Fragment(), TimePickerFragment.Callbacks {
         ViewModelProviders.of(this).get(PiratePlacesDetailViewModel::class.java)
     }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
+   override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         place = arguments?.getSerializable(ARG_PLACE) as PiratePlace
         piratePlacesDetailViewModel.place = place
