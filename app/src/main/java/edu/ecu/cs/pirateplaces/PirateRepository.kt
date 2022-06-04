@@ -31,7 +31,7 @@ class PirateRepository private constructor(context: Context){
         }
 
         fun get(): PirateRepository {
-            return INSTANCE ?: throw IllegalStateException("CrimeRepository must be initialized")
+            return INSTANCE ?: throw IllegalStateException("PirateRepository must be initialized")
         }
     }
 }

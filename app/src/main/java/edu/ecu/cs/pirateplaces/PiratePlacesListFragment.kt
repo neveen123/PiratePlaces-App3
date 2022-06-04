@@ -13,7 +13,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 
 
-private const val TAG = "PirateListFragment"
+private const val TAG="PiratePlacesListFragment"
 class PiratePlacesListFragment: Fragment() {
     private lateinit var piratePlacesRecyclerView: RecyclerView
     private var adapter: PlaceAdapter? = PlaceAdapter(emptyList())
@@ -39,13 +39,13 @@ class PiratePlacesListFragment: Fragment() {
         return view
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         piratePlacesListViewModel.pirateListLiveData.observe(
             viewLifecycleOwner,
             Observer { places ->
                 places?.let {
-                    Log.i(TAG, "Got crimes ${places.size}")
+                    Log.i(TAG, "Got places ${places.size}")
                     updateUI(places)
                 }
             })
