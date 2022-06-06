@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
 import android.text.format.DateFormat
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -14,11 +15,14 @@ import androidx.lifecycle.ViewModelProviders
 import java.text.SimpleDateFormat
 import java.util.*
 
+private const val TAG = "PiratePlacesDetailFragment"
 private const val ARG_PLACE = "place"
 private const val DIALOG_TIME = "DialogTime"
+private const val DIALOG_DATE = "DialogDate"
 private const val REQUEST_TIME = 1
+private const val REQUEST_DATE = 0
 
-class PiratePlacesDetailFragment: Fragment(), TimePickerFragment.Callbacks {
+class PiratePlacesDetailFragment: Fragment(), TimePickerFragment.Callbacks, DatePickerFragment.Callbacks {
 
     private lateinit var place: PiratePlace
     private lateinit var placeNameField : EditText
@@ -32,8 +36,12 @@ class PiratePlacesDetailFragment: Fragment(), TimePickerFragment.Callbacks {
 
    override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        place = arguments?.getSerializable(ARG_PLACE) as PiratePlace
-        piratePlacesDetailViewModel.place = place
+       place = PiratePlace()
+        val place: UUID  = arguments?.getSerializable(ARG_PLACE) as UUID
+      piratePlacesDetailViewModel.loadPiratePlaces(place)
+
+
+
     }
 
     override fun onCreateView(
@@ -48,22 +56,26 @@ class PiratePlacesDetailFragment: Fragment(), TimePickerFragment.Callbacks {
         dateButton = view.findViewById(R.id.check_in_date) as Button
         timeButton = view.findViewById(R.id.check_in_time) as Button
 
-        dateButton.isEnabled = false
-
         timeButton.setOnClickListener {
             TimePickerFragment.newInstance(place.lastVisited).apply {
                 setTargetFragment(this@PiratePlacesDetailFragment, REQUEST_TIME)
                 show(this@PiratePlacesDetailFragment.parentFragmentManager, DIALOG_TIME)
             }
         }
-
         updateUI()
-
         return view
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        piratePlacesDetailViewModel.pirateLiveData.observe(
+            viewLifecycleOwner,
+            androidx.lifecycle.Observer { place ->
+                place?.let {
+                    this.place = place
+                    updateUI()
+                }
+            })
     }
 
     override fun onStart() {
@@ -96,6 +108,12 @@ class PiratePlacesDetailFragment: Fragment(), TimePickerFragment.Callbacks {
                 place.visitedWith = p0.toString()
             }
         }
+        dateButton.setOnClickListener {
+            DatePickerFragment.newInstance(place.lastVisited).apply {
+                setTargetFragment(this@PiratePlacesDetailFragment, REQUEST_DATE)
+                show(this@PiratePlacesDetailFragment.requireFragmentManager(), DIALOG_DATE)
+            }
+        }
 
         placeNameField.addTextChangedListener(placeNameWatcher)
         guestsField.addTextChangedListener(visitedWithWatcher)
@@ -106,7 +124,17 @@ class PiratePlacesDetailFragment: Fragment(), TimePickerFragment.Callbacks {
         updateUI()
     }
 
-    fun updateUI() {
+    override fun onStop() {
+        super.onStop()
+        piratePlacesDetailViewModel.savePiratePlaces(place)
+    }
+
+    override fun onDateSelected(date: Date) {
+        place.lastVisited = date
+        updateUI()
+    }
+
+     fun updateUI() {
         val visitedDate = DateFormat.getMediumDateFormat(context).format(place.lastVisited)
         val visitedTime = DateFormat.getTimeFormat(context).format(place.lastVisited)
 
@@ -117,7 +145,7 @@ class PiratePlacesDetailFragment: Fragment(), TimePickerFragment.Callbacks {
     }
 
     companion object {
-        fun newInstance(place: PiratePlace) : PiratePlacesDetailFragment {
+        fun newInstance(place: UUID) : PiratePlacesDetailFragment {
             val args = Bundle().apply {
                 putSerializable(ARG_PLACE, place)
             }
@@ -126,5 +154,4 @@ class PiratePlacesDetailFragment: Fragment(), TimePickerFragment.Callbacks {
             }
         }
     }
-
 }

@@ -5,6 +5,7 @@ import androidx.lifecycle.LiveData
 import androidx.room.Room
 import edu.ecu.cs.pirateplaces.database.PirateDatabase
 import java.util.*
+import java.util.concurrent.Executors
 
 private const val DATABASE_NAME = "places-database"
 class PirateRepository private constructor(context: Context){
@@ -15,11 +16,19 @@ class PirateRepository private constructor(context: Context){
         DATABASE_NAME
     ).build()
     private val pirateDao = database.pirateDao()
+    private val executor =  Executors.newSingleThreadExecutor()
 
-    //fun getPirates(): List<PiratePlace> = pirateDao.getPirates()
     fun getPirates(): LiveData<List<PiratePlace>> = pirateDao.getPirates()
-   // fun getPirate(id: UUID): PiratePlace? = pirateDao.getPirate(id)
+
     fun getPirate(id: UUID): LiveData<PiratePlace?> = pirateDao.getPirate(id)
+
+    fun updatePiratePlaces(place: PiratePlace){
+        executor.execute{pirateDao.updatePiratePlaces(place)}
+    }
+
+    fun addPiratePlace(place: PiratePlace){
+        executor.execute{pirateDao.addPiratePlace(place)}
+    }
 
     companion object {
         private var INSTANCE: PirateRepository? = null

@@ -12,4 +12,5 @@
     <string name="place_name_hint">Enter the name of the Pirate Place here</string>
     <string name="visited_with_hint">Enter the names of your guests</string>
     <string name="place_details_label">Details</string>
+    <string name="new_place">Add Pirate Place</string>
 </resources>

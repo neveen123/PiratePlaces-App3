@@ -1,26 +1,43 @@
 package edu.ecu.cs.pirateplaces
 
+import android.content.Context
 import android.os.Bundle
 import android.util.Log
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import java.util.*
 
 
 private const val TAG="PiratePlacesListFragment"
 class PiratePlacesListFragment: Fragment() {
-    private lateinit var piratePlacesRecyclerView: RecyclerView
-    private var adapter: PlaceAdapter? = PlaceAdapter(emptyList())
-        // private var adapter: PlaceAdapter? = null
 
+    /**
+     * Required interface for hosting activities
+     */
+    interface Callbacks {
+        fun onPiratePlacesSelected(placeId: UUID)
+    }
+    private var callbacks: Callbacks? = null
+
+    private lateinit var piratePlacesRecyclerView: RecyclerView
+    private var adapter: PlaceAdapter = PlaceAdapter(emptyList())
     private val piratePlacesListViewModel : PiratePlacesListViewModel by lazy {
         ViewModelProviders.of(this).get(PiratePlacesListViewModel::class.java)
+    }
+
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        callbacks = context as Callbacks?
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setHasOptionsMenu(true)
     }
 
     override fun onCreateView(
@@ -34,8 +51,6 @@ class PiratePlacesListFragment: Fragment() {
         piratePlacesRecyclerView.layoutManager = LinearLayoutManager(context)
         piratePlacesRecyclerView.adapter = adapter
 
-        //updateUI()
-
         return view
     }
 
@@ -43,17 +58,36 @@ class PiratePlacesListFragment: Fragment() {
         super.onViewCreated(view, savedInstanceState)
         piratePlacesListViewModel.pirateListLiveData.observe(
             viewLifecycleOwner,
-            Observer { places ->
+           Observer { places ->
                 places?.let {
-                    Log.i(TAG, "Got places ${places.size}")
+                    Log.i(TAG," ${places.size}")
                     updateUI(places)
                 }
             })
     }
+    override fun onDetach() {
+        super.onDetach()
+        callbacks = null}
 
-   // private fun updateUI() {
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        super.onCreateOptionsMenu(menu, inflater)
+        inflater.inflate(R.menu.fragment_place_list, menu)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            R.id.new_place -> {
+                val place = PiratePlace()
+                piratePlacesListViewModel.addPiratePlace(place)
+                callbacks?.onPiratePlacesSelected(place.id)
+                true
+            }
+            else -> return super.onOptionsItemSelected(item)
+        }
+    }
+
     private fun updateUI(places: List<PiratePlace>){
-       // val places = piratePlacesListViewModel.piratePlaceList
+
         adapter = PlaceAdapter(places)
         piratePlacesRecyclerView.adapter = adapter
     }
@@ -82,8 +116,7 @@ class PiratePlacesListFragment: Fragment() {
         }
 
         override fun onClick(v: View) {
-            val intent = PiratePlacesDetailActivity.newIntent(requireContext(), place)
-            startActivity(intent)
+            callbacks?.onPiratePlacesSelected(place.id)
         }
     }
 

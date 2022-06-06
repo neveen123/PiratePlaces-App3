@@ -3,7 +3,11 @@ plugins {
     id 'org.jetbrains.kotlin.android'
     id 'org.jetbrains.kotlin.kapt'
 }
-
+android {
+    lintOptions {
+        disable 'LongLogTag'
+    }
+}
 android {
     compileSdk 32
 
